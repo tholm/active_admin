@@ -1,7 +1,7 @@
 module ActiveAdmin
   module ViewHelpers
     module BreadcrumbHelper
-
+      
       # Returns an array of links to use in a breadcrumb
       def breadcrumb_links(path = nil)
         path ||= request.fullpath
@@ -14,15 +14,16 @@ module ActiveAdmin
             begin
               parent_class = parent.singularize.camelcase.constantize
               obj = parent_class.find(part[/^[a-f0-9]{24}$/] ? part : part.to_i)
-              name = display_name(obj)
+              name = obj.display_name if obj.respond_to?(:display_name)
             rescue
-              # ignored
             end
           end
-
-          name ||= I18n.t("activerecord.models.#{part.singularize}", :count => 1.1, :default => part.titlecase)
-
-          crumbs << link_to( name, "/" + parts[0..index].join('/'))
+          name ||= part.titlecase
+          begin
+            crumbs << link_to( I18n.translate!("activerecord.models.#{part.singularize}", :count => 2), "/" + parts[0..index].join('/'))
+          rescue I18n::MissingTranslationData
+            crumbs << link_to( name, "/" + parts[0..index].join('/'))
+          end
         end
         crumbs
       end
