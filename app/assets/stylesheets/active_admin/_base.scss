@@ -1,5 +1,7 @@
 /* Active Admin CSS */
 // Reset Away!
+
+@import "active_admin/mixins/reset";
 body.active_admin {
   @include global-reset;
 }
