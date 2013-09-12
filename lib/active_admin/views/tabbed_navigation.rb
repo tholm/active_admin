@@ -41,7 +41,7 @@ module ActiveAdmin
  
       def build_menu_item(item)
         li :id => item.id do |li|
-          li.add_class "current" if item.current? assigns[:current_tab]
+          li.add_class "active" if item.current? assigns[:current_tab]
           
           if children = item.items(self).presence
             a :href => item.url(self), :class => "dropdown-toggle", :"data-toggle" => "dropdown" do
