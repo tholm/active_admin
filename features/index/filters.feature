@@ -47,7 +47,7 @@ Feature: Index Filtering
       end
     """
     When I follow "2"
-    Then I should see "Displaying Posts 6 - 9 of 9 in total"
+    Then I should see "Displaying Posts 6 – 9 of 9 in total"
 
     When I fill in "Search Title" with "Hello World 2"
     And I press "Filter"
@@ -66,7 +66,7 @@ Feature: Index Filtering
     When I press "Filter"
     Then I should see 2 posts in the table
     And I should see "Hello World" within ".index_table"
-    And the "jane_doe" checkbox should not be checked
+    And the "Jane Doe" checkbox should not be checked
 
   Scenario: Checkboxes - Filtering posts written by Jane Doe
     Given 1 post exists
@@ -77,11 +77,11 @@ Feature: Index Filtering
         filter :author, :as => :check_boxes
       end
     """
-    When I check "jane_doe"
+    When I check "Jane Doe"
     And I press "Filter"
     Then I should see 1 posts in the table
     And I should see "Hello World" within ".index_table"
-    And the "jane_doe" checkbox should be checked
+    And the "Jane Doe" checkbox should be checked
 
   Scenario: Disabling filters
     Given an index configuration of:
