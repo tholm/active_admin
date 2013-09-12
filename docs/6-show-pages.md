@@ -1,6 +1,6 @@
-# Customizing the Show Screen
+# Customize the Show Page
 
-Customizing the show screen is as simple as implementing the show block:
+Customize the show page is as simple as implementing the show block:
 
     ActiveAdmin.register Post do
       show do
@@ -36,7 +36,7 @@ If you'd like to keep the default active_admin look, you can also use "attribute
     end
 
 You can customize the title of the object in the show screen.  The default is the resource name and the ID.  You can customize as follows:
-    
+
     show :title => :name do
     end
 
