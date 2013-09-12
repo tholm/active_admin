@@ -10,6 +10,7 @@ module ActiveAdmin
         @record = record
         super(:for => @record)
         @table = table
+        @table.add_class "table"
         rows(*attrs)
       end
 
