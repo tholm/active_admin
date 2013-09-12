@@ -126,7 +126,7 @@ module ActiveAdmin
       def build_resource
         return resource if resource = get_resource_ivar
 
-        resource = build_new_resource
+        resource = super#build_new_resource
 
         run_build_callbacks resource
         authorize_resource! resource
