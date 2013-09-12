@@ -1,4 +1,4 @@
-require 'spec_helper' 
+require 'spec_helper'
 
 describe "Registering an object to administer" do
   let(:application){ ActiveAdmin::Application.new }
@@ -50,15 +50,6 @@ describe "Registering an object to administer" do
       config_2 = ActiveAdmin.register(Category) { filter :id }
       config_1.should == config_2
       config_1.filters.size.should == 2
-    end
-
-    context "with different resource classes" do
-      it "should raise an ActiveAdmin::ResourceMismatch" do
-        lambda {
-          ActiveAdmin.register Category
-          ActiveAdmin.register Post, :as => "Category"
-        }.should raise_error(ActiveAdmin::ResourceMismatchError)
-      end
     end
   end
 

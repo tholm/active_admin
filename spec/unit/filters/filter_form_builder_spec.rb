@@ -1,11 +1,10 @@
-require 'spec_helper' 
-
+require 'spec_helper'
 
 describe ActiveAdmin::Filters::ViewHelper do
 
   # Setup an ActionView::Base object which can be used for
   # generating the form for.
-  let(:helpers) do 
+  let(:helpers) do
     view = action_view
     def view.collection_path
       "/posts"
@@ -22,15 +21,18 @@ describe ActiveAdmin::Filters::ViewHelper do
     view
   end
 
-  def render_filter(search, name, options = {})
-    render_arbre_component({:filter_args => [search, [options.merge(:attribute => name)]]}, helpers) do
+  def render_filter(search, filters)
+    render_arbre_component({:filter_args => [search, filters]}, helpers) do
       text_node active_admin_filters_form_for(*assigns[:filter_args])
     end
   end
 
   def filter(name, options = {})
-    render_filter Post.search, name, options
+    render_filter Post.search, @filters.push(options.merge(:attribute => name))
   end
+
+  before(:each) { @filters = [] }
+
 
   describe "the form in general" do
     let(:body) { filter :title }
@@ -70,6 +72,22 @@ describe ActiveAdmin::Filters::ViewHelper do
         body.should have_tag('label', 'Search Name')
       ensure
         I18n.backend.reload!
+      end
+    end
+
+    context "using starts_with and as" do
+      let(:body) { filter :title_starts_with, :as => :string }
+
+      it "should generate a search field for a string attribute with query starts_with" do
+        body.should have_tag("input", :attributes => { :name => "q[title_starts_with]" })
+      end
+    end
+
+    context "using ends_with and as" do
+      let(:body) { filter :title_ends_with, :as => :string }
+
+      it "should generate a search field for a string attribute with query starts_with" do
+        body.should have_tag("input", :attributes => { :name => "q[title_ends_with]" })
       end
     end
   end
@@ -151,16 +169,12 @@ describe ActiveAdmin::Filters::ViewHelper do
       let(:body) { filter :author_id }
 
       it "should not render as an integer" do
-        body.should_not have_tag("input", :attributes => {
-                                                :name => "q[author_id_eq]"})
+        body.should_not have_tag "input",          :attributes => { :name => "q[author_id_eq]" }
       end
       it "should render as belongs to select" do
-        body.should have_tag("select", :attributes => {
-                                            :name => "q[author_id_eq]"})
-        body.should have_tag("option", "john_doe", :attributes => {
-                                                           :value => @john.id })
-        body.should have_tag("option", "jane_doe", :attributes => {
-                                                          :value => @jane.id })
+        body.should have_tag "select",             :attributes => { :name => "q[author_id_eq]" }
+        body.should have_tag "option", "John Doe", :attributes => { :value => @john.id }
+        body.should have_tag "option", "Jane Doe", :attributes => { :value => @jane.id }
       end
     end
 
@@ -168,18 +182,14 @@ describe ActiveAdmin::Filters::ViewHelper do
       let(:body) { filter :author }
 
       it "should generate a select" do
-        body.should have_tag("select", :attributes => {
-                                            :name => "q[author_id_eq]"})
+        body.should have_tag "select",             :attributes => { :name => "q[author_id_eq]" }
       end
       it "should set the default text to 'Any'" do
-        body.should have_tag("option", "Any", :attributes => {
-                                                    :value => "" })
+        body.should have_tag "option", "Any",      :attributes => { :value => "" }
       end
       it "should create an option for each related object" do
-        body.should have_tag("option", "john_doe", :attributes => {
-                                                          :value => @john.id })
-        body.should have_tag("option", "jane_doe", :attributes => {
-                                                          :value => @jane.id })
+        body.should have_tag "option", "John Doe", :attributes => { :value => @john.id }
+        body.should have_tag "option", "Jane Doe", :attributes => { :value => @jane.id }
       end
 
       context "with a proc" do
@@ -209,7 +219,7 @@ describe ActiveAdmin::Filters::ViewHelper do
                                             :value => @john.id })
         body.should have_tag("input", :attributes => {
                                             :name => "q[author_id_in][]",
-                                            :type => "checkbox",          
+                                            :type => "checkbox",
                                             :value => @jane.id })
       end
     end
@@ -217,11 +227,46 @@ describe ActiveAdmin::Filters::ViewHelper do
     context "when polymorphic relationship" do
       let(:body) do
         search = ActiveAdmin::Comment.search
-        render_filter(search, :resource)
+        render_filter(search, [{:attribute => :resource}])
       end
       it "should not generate any field" do
         body.should have_tag("form", :attributes => { :method => 'get' })
       end
     end
   end # belongs to
+
+
+  describe "conditional display" do
+
+    context "with :if block" do
+      let(:body) do
+        filter :body,   :if => proc{true}
+        filter :author, :if => proc{false}
+      end
+
+      it "should be displayed if true" do
+        body.should have_tag("input", :attributes => { :name => "q[body_contains]"})
+      end
+
+      it "should NOT be displayed if false" do
+        body.should_not have_tag("input", :attributes => { :name => "q[author_id_eq]"})
+      end
+    end
+
+    context "with :unless block" do
+      let(:body) do
+        filter :created_at, :unless => proc{false}
+        filter :updated_at, :unless => proc{true}
+      end
+
+      it "should be displayed if false" do
+        body.should have_tag("input", :attributes => { :name => "q[created_at_gte]"})
+      end
+
+      it "should NOT be displayed if true" do
+        body.should_not have_tag("input", :attributes => { :name => "q[updated_at_gte]"})
+      end
+    end
+  end
+
 end

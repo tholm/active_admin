@@ -167,7 +167,7 @@ describe ActiveAdmin::FormBuilder do
 
   end
 
-  context "with actons" do
+  context "with actions" do
     it "should generate the form once" do
       body = build_form do |f|
         f.inputs do
@@ -335,7 +335,11 @@ describe ActiveAdmin::FormBuilder do
       end
 
       it "should add a link to remove new nested records" do
-        Capybara.string(body).should have_css(".has_many > fieldset > ol > li > a", :class => "button", :href => "#", :content => "Delete")
+        Capybara.string(body).should have_css(".has_many > fieldset > ol > li.has_many_delete > a", :class => "button", :href => "#", :content => "Delete")
+      end
+
+      it "should include the nested record's class name in the js" do
+        body.should have_tag("a", :attributes => { :onclick => /NEW_POST_RECORD/ })
       end
 
       it "should add a link to add new nested records" do
@@ -355,6 +359,91 @@ describe ActiveAdmin::FormBuilder do
 
       it "should accept a block with a second argument" do
         body.should have_tag("label", "Title 1")
+      end
+
+      it "should add a custom header" do
+        body.should have_tag('h3', 'Post')
+      end 
+
+    end
+
+    describe "without heading and new record link" do
+      let :body do
+        build_form({:url => '/categories'}, Category.new) do |f|
+          f.object.posts.build
+          f.has_many :posts, :heading => false, :new_record => false do |p|
+            p.input :title
+          end
+        end
+      end
+
+      it "should not add a header" do
+        body.should_not have_tag('h3', 'Post')
+      end 
+
+      it "should not add link to new nested records" do
+        body.should_not have_tag('a', 'Add New Post')
+      end 
+
+    end  
+
+    describe "with custom heading" do
+      let :body do
+        build_form({:url => '/categories'}, Category.new) do |f|
+          f.object.posts.build
+          f.has_many :posts, :heading => "Test heading" do |p|
+            p.input :title
+          end
+        end
+      end
+
+      it "should add a custom header" do
+        body.should have_tag('h3', 'Test heading')
+      end       
+
+    end  
+
+    describe "with allow destroy" do
+      context "with an existing post" do
+        let :body do
+          build_form({:url => '/categories'}, Category.new) do |f|
+            f.object.posts.build.stub!(:new_record? => false)
+            f.has_many :posts, :allow_destroy => true do |p|
+              p.input :title
+            end
+          end
+        end
+
+        it "should include a boolean field for _destroy" do
+          body.should have_tag("input", :attributes => {:name => "category[posts_attributes][0][_destroy]"})
+        end
+
+        it "should have a check box with 'Remove' as its label" do
+          body.should have_tag("label", :attributes => {:for => "category_posts_attributes_0__destroy"}, :content => "Remove")
+        end
+
+        it "should wrap the destroy field in an li with class 'has_many_remove'" do
+          Capybara.string(body).should have_css(".has_many > fieldset > ol > li.has_many_remove > input")
+        end
+      end
+
+      context "with a new post" do
+        let :body do
+          build_form({:url => '/categories'}, Category.new) do |f|
+            f.object.posts.build
+            f.has_many :posts, :allow_destroy => true do |p|
+              p.input :title
+            end
+          end
+        end
+
+        it "should not have a boolean field for _destroy" do
+          body.should_not have_tag("input", :attributes => {:name => "category[posts_attributes][0][_destroy]"})
+        end
+
+        it "should not have a check box with 'Remove' as its label" do
+          body.should_not have_tag("label", :attributes => {:for => "category_posts_attributes_0__destroy"}, :content => "Remove")
+        end
       end
     end
 
@@ -401,6 +490,21 @@ describe ActiveAdmin::FormBuilder do
       body.should have_tag("input", :attributes => {  :type => "text",
                                                           :class => "datepicker",
                                                           :name => "post[created_at]" })
+    end
+  end
+
+  describe "inputs block with nil return value" do
+    let :body do
+      build_form do |f|
+        f.inputs do
+          f.input :title
+          nil
+        end
+      end
+    end
+
+    it "should generate a single input field" do
+      body.should have_tag("input", :attributes => { :type => "text", :name => "post[title]" })
     end
   end
 

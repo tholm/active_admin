@@ -30,7 +30,7 @@ describe ActiveAdmin::Application do
     application.site_title = "New Title"
     application.site_title.should == "New Title"
   end
-  
+
   it "should store the site's title link" do
     application.site_title_link.should == ""
   end
@@ -39,11 +39,11 @@ describe ActiveAdmin::Application do
     application.site_title_link = "http://www.mygreatsite.com"
     application.site_title_link.should == "http://www.mygreatsite.com"
   end
-  
+
   it "should store the site's title image" do
     application.site_title_image.should == ""
   end
-  
+
   it "should set the site's title image" do
     application.site_title_image = "http://railscasts.com/assets/episodes/stills/284-active-admin.png?1316476106"
     application.site_title_image.should == "http://railscasts.com/assets/episodes/stills/284-active-admin.png?1316476106"
@@ -51,10 +51,6 @@ describe ActiveAdmin::Application do
 
   it "should have a view factory" do
     application.view_factory.should be_an_instance_of(ActiveAdmin::ViewFactory)
-  end
-
-  it "should have deprecated admin notes by default" do 
-    application.admin_notes.should be_nil
   end
 
   it "should allow comments by default" do
@@ -80,20 +76,33 @@ describe ActiveAdmin::Application do
     end
   end
 
+  describe "inheritable settings" do
+    it "should set csv_options" do
+      application.csv_options.should == {}
+    end
+
+    context "when deprecated" do
+      it "should set and warn csv_column_separator" do
+        ActiveAdmin::Deprecation.should_receive(:warn)
+        application.csv_column_separator.should == ','
+      end
+    end
+  end
+
   describe "files in load path" do
     it "should load files in the first level directory" do
-      application.files_in_load_path.should include(File.expand_path("app/admin/dashboard.rb", Rails.root))
+      application.files.should include(File.expand_path("app/admin/dashboard.rb", Rails.root))
     end
 
     it "should load files from subdirectories" do
       FileUtils.mkdir_p(File.expand_path("app/admin/public", Rails.root))
       test_file = File.expand_path("app/admin/public/posts.rb", Rails.root)
       FileUtils.touch(test_file)
-      application.files_in_load_path.should include(test_file)
+      application.files.should include(test_file)
     end
   end
 
-  describe "#namespace (or #find_or_create_namespace)" do
+  describe "#namespace" do
 
     it "should yield a new namespace" do
       application.namespace :new_namespace do |ns|
@@ -102,7 +111,7 @@ describe ActiveAdmin::Application do
     end
 
     it "should return an instantiated namespace" do
-      admin = application.find_or_create_namespace :admin
+      admin = application.namespace :admin
       admin.should == application.namespaces[:admin]
     end
 
@@ -119,7 +128,7 @@ describe ActiveAdmin::Application do
   describe "#register_page" do
     it "finds or create the namespace and register the page to it" do
       namespace = mock
-      application.should_receive(:find_or_create_namespace).with("public").and_return namespace
+      application.should_receive(:namespace).with("public").and_return namespace
       namespace.should_receive(:register_page).with("My Page", {:namespace => "public"})
 
       application.register_page("My Page", :namespace => "public")
