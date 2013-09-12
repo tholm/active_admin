@@ -1,5 +1,5 @@
 jQuery ($) ->
-  $(".disabled").live 'click', ->
+  $(document).on 'click', '.disabled', ->
     return false;
 
   #
@@ -7,7 +7,7 @@ jQuery ($) ->
   #
 
   $(document).delegate "#batch_actions_selector li a", "click.rails", ->
-    $("#batch_action").val $(this).attr("data-action")
+    $("#batch_action").val $(@).attr("data-action")
     $("#collection_selection").submit()
 
   #
@@ -16,8 +16,8 @@ jQuery ($) ->
 
   if $("#batch_actions_selector").length && $(":checkbox.toggle_all").length
 
-    if $(".paginated_collection").find("table.index_table").length
-      $(".paginated_collection table").tableCheckboxToggler()
+    if $(".paginated_collection table.index_table").length
+      $(".paginated_collection table.index_table").tableCheckboxToggler()
     else
       $(".paginated_collection").checkboxToggler()
 

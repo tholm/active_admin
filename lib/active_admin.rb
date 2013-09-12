@@ -1,12 +1,13 @@
 require 'meta_search'
 require 'bourbon'
+require 'devise'
 require 'kaminari'
 require 'formtastic'
 require 'sass'
 require 'inherited_resources'
 require 'jquery-rails'
 require 'arbre'
-require 'active_admin/dependency_checker' 
+require 'active_admin/dependency_checker'
 require 'active_admin/sass/helpers'
 require 'active_admin/engine'
 
@@ -15,7 +16,10 @@ module ActiveAdmin
   autoload :VERSION,                  'active_admin/version'
   autoload :Application,              'active_admin/application'
   autoload :AssetRegistration,        'active_admin/asset_registration'
+  autoload :Authorization,            'active_admin/authorization_adapter'
+  autoload :AuthorizationAdapter,     'active_admin/authorization_adapter'
   autoload :Breadcrumbs,              'active_admin/breadcrumbs'
+  autoload :CanCanAdapter,            'active_admin/cancan_adapter'
   autoload :Callbacks,                'active_admin/callbacks'
   autoload :Component,                'active_admin/component'
   autoload :BaseController,           'active_admin/base_controller'
@@ -30,6 +34,7 @@ module ActiveAdmin
   autoload :Inputs,                   'active_admin/inputs'
   autoload :Iconic,                   'active_admin/iconic'
   autoload :Menu,                     'active_admin/menu'
+  autoload :MenuCollection,           'active_admin/menu_collection'
   autoload :MenuItem,                 'active_admin/menu_item'
   autoload :Namespace,                'active_admin/namespace'
   autoload :Page,                     'active_admin/page'
@@ -47,14 +52,6 @@ module ActiveAdmin
   autoload :ViewFactory,              'active_admin/view_factory'
   autoload :ViewHelpers,              'active_admin/view_helpers'
   autoload :Views,                    'active_admin/views'
-
-  class Railtie < ::Rails::Railtie
-    config.after_initialize do
-      # Add load paths straight to I18n, so engines and application can overwrite it.
-      require 'active_support/i18n'
-      I18n.load_path += Dir[File.expand_path('../active_admin/locales/*.yml', __FILE__)]
-    end
-  end
 
   class << self
 
@@ -86,7 +83,7 @@ module ActiveAdmin
     # Migration MoveAdminNotesToComments generated with version 0.2.2 might reference
     # to ActiveAdmin.default_namespace.
     delegate :default_namespace, :to => :application
-    ActiveAdmin::Deprecation.deprecate self, :default_namespace, 
+    ActiveAdmin::Deprecation.deprecate self, :default_namespace,
       "ActiveAdmin.default_namespace is deprecated. Please use ActiveAdmin.application.default_namespace"
 
     # A callback is triggered each time (before) Active Admin loads the configuration files.

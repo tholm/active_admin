@@ -13,7 +13,7 @@ module ActiveAdmin
       end
 
       def find_sections
-        sections = ActiveAdmin::Dashboards.sections_for_namespace(namespace)        
+        sections = ActiveAdmin::Dashboards.sections_for_namespace(namespace)
         sections.select do |section|
           if section.options.has_key?(:if)
             symbol_or_proc = section.options[:if]
@@ -27,7 +27,7 @@ module ActiveAdmin
           end
         end
       end
-      
+
       def namespace
         class_name = self.class.name
         if class_name.include?('::')
@@ -39,7 +39,7 @@ module ActiveAdmin
 
       # Return the current menu for the view. This is a helper method
       def current_menu
-        active_admin_namespace.menu
+        active_admin_namespace.fetch_menu(:default)
       end
 
       def active_admin_namespace
