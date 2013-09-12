@@ -29,7 +29,7 @@ module ActiveAdmin
       # We attempt to #display_name of any other objects
       def pretty_format(object)
         case object
-        when String
+        when String && object.present?
           object
         when Arbre::Element
           object
